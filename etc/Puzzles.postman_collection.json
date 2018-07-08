@@ -1,0 +1,38 @@
+{
+	"info": {
+		"_postman_id": "f910d244-35d6-44c7-b992-5d3a00efc801",
+		"name": "Puzzles",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:3000/puzzle",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"puzzle\" : [\n\t\t[3,8,\"X\",2,\"X\",9,\"X\",\"X\",1],\n\t\t[\"X\",\"X\",1,\"X\",5,\"X\",\"X\",\"X\",3],\n\t\t[\"X\",\"X\",\"X\",\"X\",\"X\",\"X\",2,7,\"X\"],\n\t\t[\"X\",\"X\",\"X\",6,\"X\",\"X\",3,\"X\",\"X\"],\n\t\t[\"X\",\"X\",\"X\",\"X\",\"X\",7,\"X\",\"X\",\"X\"],\n\t\t[\"X\",\"X\",9,\"X\",\"X\",\"X\",\"X\",5,8],\n\t\t[\"X\",\"X\",\"X\",\"X\",\"X\",1,9,\"X\",\"X\"],\n\t\t[9,2,5,3,\"X\",8,\"X\",4,\"X\"],\n\t\t[\"X\",\"X\",\"X\",9,7,\"X\",\"X\",8,\"X\"]\n\t]\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/puzzle",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"puzzle"
+					]
+				},
+				"description": "Passing in a file"
+			},
+			"response": []
+		}
+	]
+}
