@@ -1,11 +1,6 @@
 var _ = require('lodash');
 
 
-
-// rows = [];
-// cols = [[],[],[],[],[],[],[],[],[]];
-// puzzle = [];
-
 module.exports = class Puzzle {
 
     constructor(initialPuzzle) {
@@ -22,30 +17,10 @@ module.exports = class Puzzle {
             console.log(`The rowIdx is ${rowIdx}`);
             let row = this.rows[rowIdx];
             console.log(`The row is ${row}`);
-            // for (let col = 0; col < row.length; col++) {
-            //     console.log(`The col is ${col} and the value is ${row[col]}`);
-            //     if (!this.cols) {
-            //         this.cols = [];
-            //     }
-
-            //     if (!this.cols[col]) {
-            //         this.cols[col] = [];
-            //     }
-            //     this.cols[col] = row[col];
-            // }
         }
 
         console.log(`Do we have any rows?!!??! ${JSON.stringify(this.rows)}`);
-        // console.log(`Do we have any columns?!?! ${JSON.stringify(this.cols)}`);
     }
-
-    // getRow (row) {
-    //     return this.rows[row];
-    // }
-
-    // getCol (col) {
-    //     return this.cols[col];
-    // }
 
     getEntry(row, col) {
         return this.puzzle[row][col];
@@ -69,7 +44,6 @@ module.exports = class Puzzle {
                     retval[rowIdx][col] = potential;
                 }
             }
-            // this.rows[rowIdx] = row;
         }
         return retval;
     }
@@ -102,6 +76,27 @@ module.exports = class Puzzle {
                     console.log('Getting here?!?!?');
                     retval[rowIdx][colIdx] = potential;
                 } 
+            }
+        }
+
+        return retval;
+    }
+
+    mergeRowAndColumnPotentials(processedRowsArray, processedColumnsArray) {
+        let retval = _.cloneDeep(processedRowsArray);
+
+        for (let rowIdx = 0; rowIdx < processedRowsArray.length; rowIdx++) {
+            let processedRowsRow = processedRowsArray[rowIdx];
+            let processedColumnsRow = processedColumnsArray[rowIdx];
+            for (let colIdx = 0; colIdx < processedRowsRow.length; colIdx++) {
+                if (typeof processedRowsRow[colIdx] === 'object') {
+                    let reducedPotential = _.intersection(processedRowsRow[colIdx], processedColumnsRow[colIdx]);
+                    if (reducedPotential.length === 1) {
+                        retval[rowIdx][colIdx] = reducedPotential[0];
+                    } else {
+                        retval[rowIdx][colIdx] = reducedPotential;
+                    }
+                }
             }
         }
 
