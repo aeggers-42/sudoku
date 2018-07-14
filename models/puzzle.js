@@ -29,19 +29,24 @@ module.exports = class Puzzle {
     processRows() {
         let retval = _.cloneDeep(this.rows);
         let standard = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
         for (let rowIdx = 0; rowIdx < retval.length; rowIdx++) {
             let row = retval[rowIdx];
             let current = [];
             for (let col = 0; col < row.length; col++) {
-                current.push(row[col]);
+                if (row[col] !== "X" && !Array.isArray(row[col])) {
+                    current.push(row[col]);
+                }
             }
             let potential = _.difference(standard, current);
 
-            console.log(potential);
-
             for (let col = 0; col < row.length; col++) {
-                if (row[col] === "X") {
-                    retval[rowIdx][col] = potential;
+                if (row[col] === "X" || Array.isArray(row[col])) {
+                    if (potential.length === 1) {
+                        retval[rowIdx][col] = potential[0];
+                    } else {
+                        retval[rowIdx][col] = potential;
+                    }
                 }
             }
         }
@@ -50,17 +55,15 @@ module.exports = class Puzzle {
 
     processColumns() {
         let retval = _.cloneDeep(this.rows);
-
-        console.log(`The retval, after cloning deep is ${retval}`);
-
         let standard = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
         for (let colIdx = 0; colIdx < retval[0].length; colIdx++) {
             let current = [];
             for (let rowIdx = 0; rowIdx < retval.length; rowIdx++) {
                 let row = retval[rowIdx];
 
                 let col = row[colIdx];
-                if (col !== "X") {
+                if (col !== "X" && !Array.isArray(col)) {
                     current.push(row[colIdx]);
                 }
             }
@@ -71,16 +74,26 @@ module.exports = class Puzzle {
                 let row = retval[rowIdx];
 
                 let colValue = row[colIdx];
-                console.log(`The colValue is ${colValue}`);
-                if (colValue === "X") {
-                    console.log('Getting here?!?!?');
-                    retval[rowIdx][colIdx] = potential;
+                if (colValue === "X" || Array.isArray(colValue)) {
+                    if (potential.length === 1) {
+                        retval[rowIdx][colIdx] = potential[0];
+                    } else {
+                        retval[rowIdx][colIdx] = potential;
+                    }
                 } 
             }
         }
 
         return retval;
     }
+
+
+    // processRows and processColumns does pretty much exactly the same thing
+    // so that should be refactored into its own function
+    processEntries(startIdx, endIdx) {
+
+    }
+
 
     mergeRowAndColumnPotentials(processedRowsArray, processedColumnsArray) {
         let retval = _.cloneDeep(processedRowsArray);
@@ -102,6 +115,8 @@ module.exports = class Puzzle {
 
         return retval;
     }
+
+
 
     print(puzzle) {
         console.log('\n');
