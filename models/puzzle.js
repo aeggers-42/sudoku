@@ -1,23 +1,15 @@
 var _ = require('lodash');
 
-
 const allowedChars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'X'];
 
 module.exports = class Puzzle {
 
-
-
     constructor(initialPuzzle) {
-
-        console.log(`Got the puzzle? ${JSON.stringify(initialPuzzle)}`);
-
         this.rows = initialPuzzle.puzzle;
         this.validate();
     }
 
-    validate(puzzle) {
-
-        console.log(`The allowed chars are ${JSON.stringify(allowedChars)}`);
+    validate() {
         // Check that we have the right number of rows
         if (this.rows.length !== 9) {
             throw `Wrong number of rows. Should be 9 but there's actually ${this.rows.length}`;
@@ -40,8 +32,7 @@ module.exports = class Puzzle {
             }
 
             for (let entry of this.rows[rowIdx]) {
-                console.log(`The entry in the row is ${JSON.stringify(this.rows[rowIdx])}`);
-                if (!allowedChars.indexOf(entry) === -1) {
+                if (allowedChars.indexOf(entry) === -1) {
                     throw `Row ${rowIdx} contains an illegal character`;
                 }
             }
@@ -53,21 +44,16 @@ module.exports = class Puzzle {
             let column = [];
             for (let rowIdx = 0; rowIdx < this.rows.length; rowIdx++) {
                 let row = _.cloneDeep(this.rows[rowIdx]);
-                console.log(`The row is ${JSON.stringify(row)} and the colIdx is ${colIdx}`);
                 column.push(row[colIdx]);
             }
 
-            console.log(`The column is ${JSON.stringify(column)}`);
-
             let columnNoXs = _.remove(column, entry => entry !== 'X');
-            console.log(`The column with no xs is ${columnNoXs}`);
-
             if (_.uniq(columnNoXs).length !== columnNoXs.length) {
                 throw `Column ${colIdx} has duplicate entries ${JSON.stringify(_.uniq(columnNoXs))} ${JSON.stringify(columnNoXs)}`;
             }
 
             for (let entry of column) {
-                if (!allowedChars.indexOf(entry) === -1) {
+                if (allowedChars.indexOf(entry) === -1) {
                     throw `Column ${colIdx} contains an illegal character`;
                 }
             }
@@ -83,7 +69,7 @@ module.exports = class Puzzle {
             }
 
             for (let entry of square) {
-                if (!allowedChars.indexOf(entry) === -1) {
+                if (allowedChars.indexOf(entry) === -1) {
                     throw `Square ${squareIdx} contains an illegal character. Note: Squares are numbered left to right, top to bottom`;
                 }
             }
@@ -264,7 +250,6 @@ module.exports = class Puzzle {
         // Seems like, we should just be able to get the unique count of each row, column or square, and if it's not equal to 9, return false
         // This is going to fail if the puzzle isn't solved, but has unique arrays of options...
         for (const row of this.rows) {
-            console.log('The intersected row and allowed chars are', _.intersection(row, allowedChars.slice(0, 9)));
             if (_.intersection(row, allowedChars.slice(0, 9)).length !== 9) {
                 return false;
             }
@@ -272,7 +257,6 @@ module.exports = class Puzzle {
 
         for (let colIdx = 0; colIdx < 9; colIdx++) {
             let column = this.getColumn(colIdx);
-            console.log('The intersected column and allowed chars are', _.intersection(column, allowedChars.slice(0, 9)));
             if (_.intersection(column, allowedChars.slice(0, 9)).length !== 9) {
                 return false;
             }
@@ -280,7 +264,6 @@ module.exports = class Puzzle {
 
         for (let squareIdx = 0; squareIdx < 9; squareIdx++) {
             let square = this.getSquare(squareIdx);
-            console.log('The intersected square and allowed chars are', _.intersection(square, allowedChars.slice(0, 9)));
             if (_.intersection(square, allowedChars.slice(0, 9)).length !== 9) {
                 return false;
             }
