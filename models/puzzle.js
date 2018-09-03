@@ -1,44 +1,102 @@
 var _ = require('lodash');
 
 
+const allowedChars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'X'];
+
 module.exports = class Puzzle {
+
+
 
     constructor(initialPuzzle) {
 
         console.log(`Got the puzzle? ${JSON.stringify(initialPuzzle)}`);
 
-        // ToDo: Validation
-
-        this.puzzle = initialPuzzle;
-
         this.rows = initialPuzzle.puzzle;
-
-        // for (let rowIdx = 0; rowIdx < this.rows.length; rowIdx++) {
-            // console.log(`The rowIdx is ${rowIdx}`);
-            // let row = this.rows[rowIdx];
-            // console.log(`The row is ${row}`);
-        // }
-
-        // console.log(`Do we have any rows?!!??! ${JSON.stringify(this.rows)}`);
+        this.validate();
     }
 
-    getEntry(row, col) {
-        return this.puzzle[row][col];
+    validate(puzzle) {
+
+        console.log(`The allowed chars are ${JSON.stringify(allowedChars)}`);
+        // Check that we have the right number of rows
+        if (this.rows.length !== 9) {
+            throw `Wrong number of rows. Should be 9 but there's actually ${this.rows.length}`;
+        }
+
+        // Check that we have the right number of columns
+        for (let rowIdx = 0; rowIdx < this.rows.length; rowIdx++) {
+            let row = this.rows[rowIdx];
+            if (row.length !== 9) {
+                throw `Wrong number of columns in row ${rowIdx}. Should be 9, but there's actually ${row.length}`;
+            }
+        }
+
+        // Check that the rows don't have dups and that all characters are legal
+        for (let rowIdx = 0; rowIdx < this.rows.length; rowIdx++) {
+            let row = _.cloneDeep(this.rows[rowIdx]);
+            let rowNoXs = _.remove(row, entry => entry !== 'X');
+            if (_.uniq(rowNoXs).length !== rowNoXs.length) {
+                throw `Row ${rowIdx} has duplicate entries`;
+            }
+
+            for (let entry of this.rows[rowIdx]) {
+                console.log(`The entry in the row is ${JSON.stringify(this.rows[rowIdx])}`);
+                if (!allowedChars.indexOf(entry) === -1) {
+                    throw `Row ${rowIdx} contains an illegal character`;
+                }
+            }
+
+        }
+
+        // Check that the columns don't have dups and that all characters are legal
+        for (let colIdx = 0; colIdx < this.rows[0].length; colIdx++) {
+            let column = [];
+            for (let rowIdx = 0; rowIdx < this.rows.length; rowIdx++) {
+                let row = _.cloneDeep(this.rows[rowIdx]);
+                console.log(`The row is ${JSON.stringify(row)} and the colIdx is ${colIdx}`);
+                column.push(row[colIdx]);
+            }
+
+            console.log(`The column is ${JSON.stringify(column)}`);
+
+            let columnNoXs = _.remove(column, entry => entry !== 'X');
+            console.log(`The column with no xs is ${columnNoXs}`);
+
+            if (_.uniq(columnNoXs).length !== columnNoXs.length) {
+                throw `Column ${colIdx} has duplicate entries ${JSON.stringify(_.uniq(columnNoXs))} ${JSON.stringify(columnNoXs)}`;
+            }
+
+            for (let entry of column) {
+                if (!allowedChars.indexOf(entry) === -1) {
+                    throw `Column ${colIdx} contains an illegal character`;
+                }
+            }
+        }
+
+        // Check that squares don't have dups and that all characters are legal
+        let squaresArray = this.createSquaresArray();
+        for (let squareIdx = 0; squareIdx < squaresArray.length; squareIdx++) {
+            let square = squaresArray[squareIdx];
+            let squareNoXs = _.remove(square, entry => entry !== 'X');
+            if (_.uniq(squareNoXs).length !== squareNoXs.length) {
+                throw `Square ${squareIdx} has duplicate entries. Note: Squares are numbererd left to right, top to bottom`;
+            }
+
+            for (let entry of square) {
+                if (!allowedChars.indexOf(entry) === -1) {
+                    throw `Square ${squareIdx} contains an illegal character. Note: Squares are numbered left to right, top to bottom`;
+                }
+            }
+        }
     }
 
     processRows() {
-        // let retval = _.cloneDeep(puzzle);
-
         for (let rowIdx = 0; rowIdx < this.rows.length; rowIdx++) {
             this.rows[rowIdx] = this.processEntries(this.rows[rowIdx]);
         }
-
-        // return retval;
     }
 
     processColumns() {
-        // let retval = _.cloneDeep(puzzle);
-
         for (let colIdx = 0; colIdx < this.rows[0].length; colIdx++) {
             let column = [];
             for (let rowIdx = 0; rowIdx < this.rows.length; rowIdx++) {
@@ -52,8 +110,6 @@ module.exports = class Puzzle {
                 this.rows[rowIdx][colIdx] = processedCol[rowIdx];
             }
         }
-
-        // return retval;
     }
 
 
@@ -83,61 +139,40 @@ module.exports = class Puzzle {
             }
         }
 
-        // console.log(`The squaresArray ${JSON.stringify(squaresArray)}`);
-
         return squaresArray;
     }
 
     processSquares() {
-        // let retval = _.cloneDeep(puzzle);
         let squaresArray = this.createSquaresArray();
         let processedSquares = [];
         for (let squareIdx = 0; squareIdx < squaresArray.length; squareIdx++) {
             processedSquares.push(this.processEntries(squaresArray[squareIdx]));
         }
 
-        // this.print(processedSquares);
-
         for (let squareIdx = 0; squareIdx < squaresArray.length; squareIdx++) {
             let square = processedSquares[squareIdx];
 
             for (let cellIdx = 0; cellIdx < square.length; cellIdx++) {
                 let rowCol = this.squareCellToRowColumn(squareIdx, cellIdx);
-                // console.log(`The rowCol is ${JSON.stringify(rowCol)}`);
                 this.rows[rowCol.row][rowCol.col] = square[cellIdx];
             }
         }
-
-        // console.log('The processed squares are');
-        // this.print(retval);
-
-        // return retval;
     }
 
     squareCellToRowColumn(squareIdx, cellIdx) {
-        // [0][5] in square coordinates corresponds to row column [1][1]
-        // [6][8] in square coordinates corresponds to row column [8][1]
 
         let row = Math.floor(squareIdx / 3) * 3 + Math.floor(cellIdx / 3);
         let col = squareIdx % 3 * 3 + cellIdx % 3;
 
-        // console.log(`The squareIdx is ${squareIdx} the cellIdx is ${cellIdx} the row ${row} the col ${col}`);
- 
         return {
             row: row,
             col: col
         };
     }
 
-
-    // processRows and processColumns does pretty much exactly the same thing
-    // so that should be refactored into its own function
     processEntries(entrySet) {
-        // console.log(`The entrySet before ${JSON.stringify(entrySet)}`);
         let retval = _.cloneDeep(entrySet);
         const standard = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
-
-        // entrySet is an array with a length of 9, and it represents values that should be unique
 
         let potential = _.difference(standard, _.filter(retval, entry => entry !== "X" && !Array.isArray(entry)));
         potential = potential.length === 1 ? potential[0] : potential;
@@ -149,47 +184,32 @@ module.exports = class Puzzle {
             }
         }
 
-        // console.log(`And after ${JSON.stringify(retval)}`);
-
         return retval;
     }
 
 
     mergePotentials(cellPotentials, entryPotentials) {
-        // let retval = _.cloneDeep(processedRowsArray);
-
-        // for (let rowIdx = 0; rowIdx < processedRowsArray.length; rowIdx++) {
-            // let processedRowsRow = processedRowsArray[rowIdx];
-            // let processedColumnsRow = processedColumnsArray[rowIdx];
-            // for (let colIdx = 0; colIdx < processedRowsRow.length; colIdx++) {
-                if (Array.isArray(cellPotentials) && Array.isArray(entryPotentials)) {
-                    if (cellPotentials.length === 1) {
-                        return cellPotentials[0];
-                    } else if (entryPotentials.length === 1) {
-                        return entryPotentials[0];
-                    } else {
-                        let reducedPotential = _.intersection(cellPotentials, entryPotentials);
-                        if (reducedPotential.length === 1) {
-                            return reducedPotential[0];
-                        } else {
-                            return reducedPotential;
-                        }
-                    }
-                } else if (Array.isArray(cellPotentials) && !Array.isArray(entryPotentials) && entryPotentials !== 'X') {
-                    return entryPotentials;
-                } else if (Array.isArray(cellPotentials) && !Array.isArray(entryPotentials) && entryPotentials === 'X') {
-                    return cellPotentials;
-                } else if (!Array.isArray(cellPotentials) && cellPotentials !== 'X' && Array.isArray(entryPotentials)) {
-                    return cellPotentials;
-                } else if (!Array.isArray(cellPotentials) && cellPotentials === 'X' && Array.isArray(entryPotentials)) {
-                    return entryPotentials;
+        if (Array.isArray(cellPotentials) && Array.isArray(entryPotentials)) {
+            if (cellPotentials.length === 1) {
+                return cellPotentials[0];
+            } else if (entryPotentials.length === 1) {
+                return entryPotentials[0];
+            } else {
+                let reducedPotential = _.intersection(cellPotentials, entryPotentials);
+                if (reducedPotential.length === 1) {
+                    return reducedPotential[0];
+                } else {
+                    return reducedPotential;
                 }
-            // }
-        // }
-
-        console.log(`The rows at the end are ${retval.length}`);
-        for (let row of retval) {
-            console.log(`The cols are ${row.length}`);
+            }
+        } else if (Array.isArray(cellPotentials) && !Array.isArray(entryPotentials) && entryPotentials !== 'X') {
+            return entryPotentials;
+        } else if (Array.isArray(cellPotentials) && !Array.isArray(entryPotentials) && entryPotentials === 'X') {
+            return cellPotentials;
+        } else if (!Array.isArray(cellPotentials) && cellPotentials !== 'X' && Array.isArray(entryPotentials)) {
+            return cellPotentials;
+        } else if (!Array.isArray(cellPotentials) && cellPotentials === 'X' && Array.isArray(entryPotentials)) {
+            return entryPotentials;
         }
 
         return retval;
@@ -197,9 +217,8 @@ module.exports = class Puzzle {
 
 
 
-    print(puzzle) {
-        // console.log('\n');
-        for (let row of puzzle) {
+    print() {
+        for (let row of this.rows) {
             let logStr = '';
             for (let col = 0; col < row.length; col++) {
                 if (typeof row[col] === 'object') {
@@ -214,5 +233,58 @@ module.exports = class Puzzle {
             }
             console.log(logStr);
         }
+    }
+
+    getColumn(colIndex) {
+        let retval = [];
+        for (const row of this.rows) {
+            retval.push(row[colIndex]);
+        }
+        return retval;
+    }
+
+    getSquare(squareIdx) {
+        let retval = [];
+        // Need to transform squareIndex to row column top left space in each square
+        let startRow = Math.floor(squareIdx / 3) * 3;
+        let startCol = squareIdx % 3 * 3;
+        console.log(`The startRow is ${startRow} and the startCol is ${startCol}`);
+        for (let row = startRow; row < startRow + 3; row++) {
+            for (let col = startCol; col < startCol + 3; col++) {
+                retval.push(this.rows[row][col]);
+            }
+        }
+        console.log('The square is ', retval);
+        return retval;
+    }
+
+    puzzleSolved() {
+        // Need to check that all the spaces are filled in, each row, column, and square only uses each of the numbers 1-9 once
+        // If, at any point, we encounter an invalid row, column or square, return false
+        // Seems like, we should just be able to get the unique count of each row, column or square, and if it's not equal to 9, return false
+        // This is going to fail if the puzzle isn't solved, but has unique arrays of options...
+        for (const row of this.rows) {
+            console.log('The intersected row and allowed chars are', _.intersection(row, allowedChars.slice(0, 9)));
+            if (_.intersection(row, allowedChars.slice(0, 9)).length !== 9) {
+                return false;
+            }
+        }
+
+        for (let colIdx = 0; colIdx < 9; colIdx++) {
+            let column = this.getColumn(colIdx);
+            console.log('The intersected column and allowed chars are', _.intersection(column, allowedChars.slice(0, 9)));
+            if (_.intersection(column, allowedChars.slice(0, 9)).length !== 9) {
+                return false;
+            }
+        }
+
+        for (let squareIdx = 0; squareIdx < 9; squareIdx++) {
+            let square = this.getSquare(squareIdx);
+            console.log('The intersected square and allowed chars are', _.intersection(square, allowedChars.slice(0, 9)));
+            if (_.intersection(square, allowedChars.slice(0, 9)).length !== 9) {
+                return false;
+            }
+        }
+        return true;
     }
 };
